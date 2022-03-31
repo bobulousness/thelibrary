@@ -1,5 +1,5 @@
 const mongoose = require('mongoose');
-const books = require('./models/bookDB');
+const books = require('../models/bookDB');
 var bodypars = require('body-parser');
 var session = require('express-session');
 
