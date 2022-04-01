@@ -1,5 +1,3 @@
-'use strict';
-
 const mongoose = require('mongoose');
 const books = require('./models/bookDB');
 
