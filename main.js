@@ -1,5 +1,5 @@
-var mongoose = require('mongoose');
-const books = require('./models/bookDB');
+import "mongoose"
+import "./models/bookDB"
 
 main().catch(err => console.log(err));
 
