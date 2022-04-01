@@ -1,5 +1,5 @@
 {
-  "name": "TheLibrary",
+  "name": "thelibrary",
   "version": "1.0.0",
   "description": "",
   "main": "main.js",
@@ -12,6 +12,7 @@
   "dependencies": {
     "express": "^4.17.3",
     "mongoose": "^6.2.9",
-    "phaser": "^3.55.2"
+    "phaser": "^3.55.2",
+    "require": "^2.4.20"
   }
 }
