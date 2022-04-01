@@ -11,9 +11,12 @@
   "license": "ISC",
   "type": "module",
   "dependencies": {
+    "body-parser": "^1.19.2",
+    "ejs": "^3.1.6",
     "express": "^4.17.3",
+    "express-session": "^1.17.2",
     "mongoose": "^6.2.9",
     "phaser": "^3.55.2",
-    "require": "^2.4.20"
+    "require": "^0.4.4"
   }
 }
