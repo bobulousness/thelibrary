@@ -1,3 +1,5 @@
+'use strict';
+
 const mongoose = require('mongoose');
 const books = require('./models/bookDB');
 
@@ -10,13 +12,13 @@ async function preload(){
     db.on('error', console.error.bind(console, 'connection error:'));
     db.once('open', function () {});
 
-
+    this.load.image('background', 'assets/glock.png')
 
     var bookList = books.getBooks();
 }
 
 function create(){
-
+ this.background = this.add.tileSprite(0,0,320,568, 'background');
 
 }
 
