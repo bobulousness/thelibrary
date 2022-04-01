@@ -1,5 +1,7 @@
-const mongoose = require('mongoose');
+var mongoose = require('mongoose');
 const books = require('./models/bookDB');
+
+main().catch(err => console.log(err));
 
 const game = new Phaser.Game(800,600,Phaser.AUTO,'game',
     {preload:preload,create:create,update:update,render:render});
