@@ -1,33 +1,40 @@
-var express = require('express');
-var bodypars = require('body-parser');
-var session = require('express-session');
+const express = require('express');
+const BodyParser = require('body-parser');
+const Cors = require("cors")
 const mongoose = require('mongoose');
+const { MongoClient, ObjectID } = require("mongodb");
+const path = require("path");
+const engines = require('consolidate');
 
-main().catch(err => console.log(err));
+const server = express()
+server.use(BodyParser.json());
+const urle = BodyParser.urlencoded({ extended: false });
+server.use(Cors());
+server.set('views', __dirname + '/views');
+server.engine('html',engines.mustache);
+server.set('view engine', 'html');
+server.use('/assets', express.static('assets'));
 
-const game = new Phaser.Game(800,600,Phaser.AUTO,'game',
-    {preload:preload,create:create,update:update,render:render});
+const connection = mongoose.connect('mongodb://localhost:27017/Library')
+const db = mongoose.connection;
+db.on('error', console.error.bind(console, 'connection error:'));
+db.once('open', function () {
+});
 
-async function preload(){
-    await mongoose.connect('mongodb://localhost:27017/Library');
-    const db = mongoose.connection;
-    db.on('error', console.error.bind(console, 'connection error:'));
-    db.once('open', function () {});
 
-    this.load.image('background', 'assets/glock.png')
 
-    var bookList = books.getBooks();
-}
+server.post("/map",urle, async (request, response, next) => {
 
-function create(){
- this.background = this.add.tileSprite(0,0,320,568, 'background');
 
-}
+});
+server.get("/", async (request, response, next) => {
+    response.render('index');
+});
 
-function update(){
-
-}
-
-function render(){
-
-}
+server.listen("3030", async () => {
+    try {
+        console.log("Listening at :3030...");
+    } catch (e) {
+        console.error(e);
+    }
+});
