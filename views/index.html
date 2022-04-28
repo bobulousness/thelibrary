@@ -1,43 +1,17 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8"/>
-    <script src="https://cdn.jsdelivr.net/npm/phaser@3.55.2/dist/phaser.js"></script>
+    <head>
+        <meta charset="UTF-8"/>
 
-    <style>body {
-        background: black;
-        padding: 10px;
-        margin: 10px;
-    }</style>
-</head>
-<body>
-<script type="text/javascript">
-    const config = {
-        width: 1600,
-        height: 900,
-        type: Phaser.AUTO,
-        parent: "game",
-        scene: {
-            preload: preload,
-            create: create,
-            update: update,
-        }
-    };
 
-    const game = new Phaser.Game(config);
-
-    function preload() {
-        this.load.image('background', 'assets/grey.png')
-    }
-
-    function create() {
-        this.background = this.add.image(800, 450, 'background');
-
-    }
-
-    function update() {
-
-    }
-</script>
-</body>
+        <style>body {
+            background: black;
+            padding: 10px;
+            margin: 10px;
+        }</style>
+    </head>
+    <body>
+        <script src="https://cdn.jsdelivr.net/npm/phaser@3.55.2/dist/phaser.js"></script>
+        <script type="module" src="/game/game.js"></script>
+    </body>
 </html>
