@@ -2,18 +2,26 @@ const express = require('express');
 const BodyParser = require('body-parser');
 const Cors = require("cors")
 const mongoose = require('mongoose');
-const { MongoClient, ObjectID } = require("mongodb");
-const path = require("path");
 const engines = require('consolidate');
+
+const mapDB = require('./models/mapsDB');
+const bookDB = require('./models/bookDB');
+const roomDB = require('./models/roomDB');
+const bodyParser = require("body-parser");
 
 const server = express()
 server.use(BodyParser.json());
 const urle = BodyParser.urlencoded({ extended: false });
-server.use(Cors());
+
 server.set('views', __dirname + '/views');
 server.engine('html',engines.mustache);
 server.set('view engine', 'html');
+
+server.use(Cors());
+server.use('/game', express.static('game'));
 server.use('/assets', express.static('assets'));
+server.use('/models', express.static('models'));
+server.use('/node_modules', express.static('node_modules'));
 
 const connection = mongoose.connect('mongodb://localhost:27017/Library')
 const db = mongoose.connection;
@@ -23,11 +31,26 @@ db.once('open', function () {
 
 
 
-server.post("/map",urle, async (request, response, next) => {
-
-
+server.get("/map", async (request, response) => {
+    mapDB.getMap().then(map => {
+        response.send(map);
+    });
 });
+
+server.post("/getRooms", urle, async (request, response) => {
+
+    var q = request.body.rare;
+    console.log(q);
+    roomDB.getRoomsByRarity(q).then(rooms => {
+        response.send(rooms);
+    });
+});
+
 server.get("/", async (request, response, next) => {
+    response.render('index');
+});
+
+server.post("/save", async (request, response, next) => {
     response.render('index');
 });
 
