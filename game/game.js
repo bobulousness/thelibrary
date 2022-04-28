@@ -14,35 +14,15 @@ var map = {};
 const block = 55;
 const origin = 400;
 var levels = [
-    {
-        z: -3,
-        rooms: []
-    },
-    {
-        z: -2,
-        rooms: []
-    },
-    {
-        z: -1,
-        rooms: []
-    },
-    {
-        z: 0,
-        rooms: []
-    },
-    {
-        z: 1,
-        rooms: []
-    },
-    {
-        z: 2,
-        rooms: []
-    },
-    {
-        z: 3,
-        rooms: []
-    }
+    {z: -3, rooms: []},
+    {z: -2, rooms: []},
+    {z: -1, rooms: []},
+    {z: 0, rooms: []},
+    {z: 1, rooms: []},
+    {z: 2, rooms: []},
+    {z: 3, rooms: []}
 ];
+
 var cLevel = 0;
 var levelRooms = [];
 var selectSprites = [];
