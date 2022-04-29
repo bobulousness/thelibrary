@@ -33,6 +33,7 @@ db.once('open', function () {
 
 server.get("/map", async (request, response) => {
     mapDB.getMap().then(map => {
+        console.log(map)
         response.send(map);
     });
 });
@@ -40,8 +41,9 @@ server.get("/map", async (request, response) => {
 server.post("/getRooms", urle, async (request, response) => {
 
     var q = request.body.rare;
-    console.log(q);
+    console.log("rare: " +q);
     roomDB.getRoomsByRarity(q).then(rooms => {
+        console.log(rooms)
         response.send(rooms);
     });
 });

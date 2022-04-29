@@ -20,7 +20,17 @@ module.exports.getRooms = async function (){
 }
 
 module.exports.getRoomsByRarity = async function(rare){
-    return model.find({rarity: rare});
+    switch(rare){
+        case 1:
+            return model.find({rarity: "common"});
+            break;
+        case 2:
+            return model.find({rarity: "uncommon"});
+            break;
+        case 3:
+            return model.find({rarity: 'rare'});
+    }
+
 }
 
 

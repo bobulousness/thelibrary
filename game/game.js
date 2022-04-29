@@ -1,3 +1,4 @@
+//config the game
 const config = {
     width: 1600,
     height: 900,
@@ -10,6 +11,7 @@ const config = {
     }
 }
 
+//global setup for map
 var map = {};
 const block = 55;
 const origin = 400;
@@ -22,15 +24,16 @@ var levels = [
     {z: 2, rooms: []},
     {z: 3, rooms: []}
 ];
-
 var cLevel = 0;
 var levelRooms = [];
 var selectSprites = [];
 const roomRarity = [1, 1, 1, 1, 2, 2, 2, 3];
 const itemRarity = [1, 1, 1, 1, 1, 2, 2, 2, 2, 3, 3, 3, 4, 4, 5];
 
+//start the game
 const game = new Phaser.Game(config);
 
+//preload all images
 function preload() {
     this.load.image('background', '../assets/grey.png');
 
@@ -41,13 +44,14 @@ function preload() {
 
     //large rooms
     this.load.image('balconyRoom2', '../assets/balconyRoom2.png');
+    this.load.image('balconyRoom1', '../assets/largeShortRoom.png');
     this.load.image('largeShortRoom', '../assets/largeShortRoom.png');
     this.load.image('balconyRoomStair1', '../assets/balconyRoomStair1.png');
     this.load.image('balconyRoomStair2', '../assets/balconyRoomStair2.png');
     this.load.image('fountainRoom', '../assets/fountainRoom.png');
 
     //long rooms
-    this.load.image('chapel', '../assets/chapel.png');
+    this.load.image('chapel1', '../assets/chapel.png');
     this.load.image('chapel2', '../assets/chapel2.png');
     this.load.image('longRoom', '../assets/longRoom.png')
 
@@ -65,30 +69,35 @@ function preload() {
 }
 
 function create() {
-    //make static sprites
+    //static sprites
     this.background = this.add.image(800, 450, 'background');
 
+    //build animations
+    //selectRoom Animation(green)
     var selectRoomAnim = {
         key: 'selectRoomAnim',
         frames: this.anims.generateFrameNumbers('selectRoom', {start: 0, end: 1, first: 0}),
         frameRate: 2,
         repeat: -1
     }
+    //select animation (blue)
     var selectAnim = {
         key: 'selectAnim',
         frames: this.anims.generateFrameNumbers('select', {start: 0, end: 1, first: 0}),
         frameRate: 2,
         repeat: -1
     }
-
+    //create the animations
     this.anims.create(selectRoomAnim);
     this.anims.create(selectAnim);
 
+    //create the room selector sprite
     this.selectRoomSprite = this.add.sprite(0, 0, 'selectRoom')
         .play('selectRoomAnim')
         .setOrigin(0)
         .setDepth(1);
 
+    //spawn the buttons
     this.save = this.add.sprite(8, 8, 'save')
         .setOrigin(0)
         .setInteractive()
@@ -115,20 +124,26 @@ function create() {
         //render level 0
         .then(r => {
             let rooms = levels[3].rooms;
+            console.log(rooms);
+            //for each room
             for (let i = 0; i < rooms.length; i++) {
                 let start = rooms[i].coordinates.start;
                 let name = rooms[i].name;
+                //make a corresponding object and add it to levelRooms
                 levelRooms[i] = {
                     image: this.add.sprite(calculatePosition(start.x), calculatePosition(start.y), name)
                         .setOrigin(0)
                         .setInteractive(),
                     selected: false
                 };
+                //then add the click event and adjust angle
                 levelRooms[i].image.on('pointerdown', pointer => selectRoom(levelRooms[i], this.selectRoomSprite));
+                levelRooms[i].image.angle = rooms[i].angle;
             }
         })
 }
 
+//render a level of the map
 function renderLevel(level) {
     levelRooms = [];
     cLevel = level;
@@ -140,10 +155,12 @@ function renderLevel(level) {
         let name = rooms[i].name;
         levelRooms[i].push({
             image: this.add.sprite(calculatePosition(start.x), calculatePosition(start.y), name)
-                .setOrigin(0),
+                .setOrigin(0)
+                .setInteractive(),
             selected: false
         });
         levelRooms[i].image.on('pointerdown', pointer => selectRoom(levelRooms[i], this.selectRoomSprite));
+        levelRooms[i].image.angle = rooms[i].angle;
     }
 }
 
@@ -152,13 +169,19 @@ function update() {
 
 }
 
+//set room to be selected (green)
 function selectRoom(pointer, sel) {
-    sel.x = pointer.image.x;
-    sel.y = pointer.image.y;
+    sel.x = pointer.image.x //+ adjust[0];
+    sel.y = pointer.image.y //+ adjust[1];
+    sel.angle = pointer.image.angle;
+
+
     for (let i = 0; i < levelRooms.length; i++) {
+        //unselect the selected room
         if (levelRooms[i].selected === true) {
             levelRooms[i].selected = false;
         }
+        //select the chosen room
         if (levelRooms[i].image.x === sel.x && levelRooms[i].image.y === sel.y) {
             pointer.selected = true;
         }
@@ -166,37 +189,50 @@ function selectRoom(pointer, sel) {
 
 }
 
+//click event function for creating new room, by making the select boxes(blue)
 function startNewRoom(context) {
+    //get the selected room
     let sRoom = findSelectedRoom()
-    if(sRoom != null) {
+    console.log(sRoom);
+    //if the room exists..
+    if (sRoom != null) {
+        //get the size of the room, get rid of any existing select sprites, and get the angle adjustments
+        //TODO: fix the angle adjustments
         let rSize = determineRoomSize(sRoom);
         killSelectSprites();
-        selectSprites = []
+        let theta = angleFullPosition(-sRoom.angle, 1,1);
+        console.log(theta+", "+(-sRoom.angle));
 
         //horizontal selectors
         for (let i = 0; i < rSize[0]; i++) {
 
             //top
             selectSprites.push(
-                context.add.sprite(calculatePosition(sRoom.coordinates.end.x - i), calculatePosition(sRoom.coordinates.start.y - 1), 'select')
+                context.add.sprite(calculatePosition(sRoom.coordinates.end.x - i), calculatePosition(sRoom.coordinates.start.y - theta[1]), 'select')
                     .play('selectAnim')
                     .setOrigin(0)
                     .setDepth(1)
                     .setInteractive()
                     .on('pointerdown', pointer => {
-                        makeNewRoom(context);
+                        makeNewRoom(context, {
+                            x: calculatePosition(sRoom.coordinates.end.x - i),
+                            y: calculatePosition(sRoom.coordinates.start.y - theta[1])
+                        });
                     })
             );
 
             //bottom
             selectSprites.push(
-                context.add.sprite(calculatePosition(sRoom.coordinates.end.x - i), calculatePosition(sRoom.coordinates.end.y + 1), 'select')
+                context.add.sprite(calculatePosition(sRoom.coordinates.end.x - i), calculatePosition(sRoom.coordinates.end.y + theta[1]), 'select')
                     .play('selectAnim')
                     .setOrigin(0)
                     .setDepth(1)
                     .setInteractive()
                     .on('pointerdown', pointer => {
-                        makeNewRoom(context);
+                        makeNewRoom(context, {
+                            x: calculatePosition(sRoom.coordinates.end.x - i),
+                            y: calculatePosition(sRoom.coordinates.end.y + theta[1])
+                        });
                     })
             );
         }
@@ -205,24 +241,30 @@ function startNewRoom(context) {
 
         for (let i = 0; i < rSize[1]; i++) {
             selectSprites.push(
-                context.add.sprite(calculatePosition(sRoom.coordinates.start.x - 1), calculatePosition(sRoom.coordinates.end.y - i) + 1, 'select')
+                context.add.sprite(calculatePosition(sRoom.coordinates.start.x - theta[0]), calculatePosition(sRoom.coordinates.end.y - i), 'select')
                     .play('selectAnim')
                     .setOrigin(0)
                     .setDepth(1)
                     .setInteractive()
                     .on('pointerdown', pointer => {
-                        makeNewRoom(context);
+                        makeNewRoom(context, {
+                            x: calculatePosition(sRoom.coordinates.start.x - theta[0]),
+                            y: calculatePosition(sRoom.coordinates.end.y - i)
+                        });
                     })
             );
 
             selectSprites.push(
-                context.add.sprite(calculatePosition(sRoom.coordinates.end.x + 1), calculatePosition(sRoom.coordinates.end.y + i), 'select')
+                context.add.sprite(calculatePosition(sRoom.coordinates.end.x + theta[0]), calculatePosition(sRoom.coordinates.end.y - i), 'select')
                     .play('selectAnim')
                     .setOrigin(0)
                     .setDepth(1)
                     .setInteractive()
                     .on('pointerdown', pointer => {
-                        makeNewRoom(context);
+                        makeNewRoom(context, {
+                            x: calculatePosition(sRoom.coordinates.end.x + theta[0]),
+                            y: calculatePosition(sRoom.coordinates.end.y + i)
+                        });
                     })
             );
         }
@@ -237,14 +279,17 @@ function startNewRoom(context) {
         }
 
         return selectSprites;
-    }else{
+    } else {
         console.log("no room selected");
     }
 }
 
-function makeNewRoom(sel) {
+//click event function on click of slect sprites (blue)
+function makeNewRoom(context, object) {
+    //generate room rarity
     let rarity = roomRarity[Math.floor(Math.random() * 8)];
     let roomList;
+    //get teh roomlist, based on rarity
     fetch("/getRooms", {
         method: 'POST',
         headers: {
@@ -252,48 +297,296 @@ function makeNewRoom(sel) {
         },
         body: JSON.stringify({rare: rarity})
     })
+        .then(response => response.json())
         .then(response => JSON.stringify(response))
-        .then(response =>{
+        .then(response => {
             roomList = JSON.parse(response);
-            let choice = roomList[Math.floor(Math.random()*roomList.length-1)];
-            
+            //setup for loop
+            let result = false;
+            let n;
+            let choice;
+            let found = true;
+            let again = [];
+            while (result === false) {
+                //pick a random room that hasn't already been picked
+                while (found) {
+                    found = false;
+                    n = Math.floor(Math.random() * (roomList.length));
+                    for (let i = 0; i < again.length; i++) {
+                        if (n === again[i]) {
+                            found = true;
+                        }
+                    }
+                }
+                again.push(n);
+
+                //get the room from the list
+                choice = roomList[n];
+                //add the room to the map
+                result = addRoomToMap(choice, context, object);
+                found = true;
+                //if it didnt work, try again
+                if (again.length === roomList.length) {
+                    console.log("no compatible room found")
+                    result = true;
+                    break;
+                }
+            }
+            //add to level
+
         });
+}
+
+//function to fully implement a new room to the map and game
+function addRoomToMap(choice, context, object) {
+    let num = levelRooms.length;
+    let height = "";
+    let pos;
+
+    //create sprite for short rooms
+    if (choice.height === 1) {
+        levelRooms.push({
+            image: context.add.sprite(object.x, object.y, choice.name)
+                .setOrigin(0)
+                .setInteractive(),
+            selected: false
+        });
+        //create sprite for taller rooms
+    } else {
+        height = Math.floor(Math.random() * (choice.height)) + 1;
+        levelRooms.push({
+            image: context.add.sprite(object.x, object.y, choice.name + height)
+                .setOrigin(0)
+                .setInteractive(),
+            selected: false
+        });
+    }
+    //setup click event for room sprite
+    levelRooms[num].image.on('pointerdown', pointer => selectRoom(levelRooms[num], context.selectRoomSprite));
+
+    //check for collisions
+    let attempt = levelRooms[num].image;
+    for (let q = 0; q < 4; q++) {
+        for (let i = 0; i < levelRooms.length - 1; i++) {
+            //on collide..
+            if (Phaser.Geom.Intersects.RectangleToRectangle(attempt.getBounds(), levelRooms[i].image.getBounds())) {
+                //adjust the angle and the position accordingly
+                attempt.angle -= 90;
+                pos = angleIncPosition(attempt.angle, block-1);
+                attempt.x += pos[0];
+                attempt.y += pos[1];
+                //if it can't fit, get rid of it
+                if (q === 3) {
+                    levelRooms.pop().image.destroy();
+                    console.log(choice.name + " failed");
+                    return false;
+                }
+            }
+        }
+    }
+    console.log("angle: " + attempt.angle);
+
+    //create the object for the new room based on angle
+    let newRoom;
+    switch (attempt.angle) {
+        case 0:
+        case 360:
+            newRoom = {
+                name: choice.name + height,
+                angle: attempt.angle,
+                coordinates: {
+                    start: {
+                        x: (attempt.x-origin)/block,
+                        y: (attempt.y-origin)/block
+                    },
+                    end: {
+                        x: (attempt.x-origin)/block + choice.length-1,
+                        y: (attempt.y-origin)/block + choice.width-1
+                    }
+                }
+            }
+            break;
+        case 90:
+        case -90:
+            console.log("y: "+attempt.y);
+            newRoom = {
+                name: choice.name + height,
+                angle: attempt.angle,
+                coordinates: {
+                    start: {
+                        x: (attempt.x-origin)/block,
+                        y: (attempt.y-origin-54)/block
+                    },
+                    end: {
+                        x: (attempt.x-origin)/block + (choice.width-1),
+                        y: (attempt.y-origin-54)/block - (choice.length-1)
+                    }
+                }
+            }
+            break;
+        case 180:
+        case -180:
+            newRoom = {
+                name: choice.name + height,
+                angle: attempt.angle,
+                coordinates: {
+                    start: {
+                        x: (attempt.x-400-54)/block,
+                        y: (attempt.y-400-54)/block
+                    },
+                    end: {
+                        x: (attempt.x-400-54)/block - choice.length-1,
+                        y: (attempt.y-400-54)/block - choice.width-1
+                    }
+                }
+            }
+            break;
+        case 270:
+        case -270:
+            newRoom = {
+                name: choice.name + height,
+                angle: attempt.angle,
+                coordinates: {
+                    start: {
+                        x: (attempt.x-400)/block,
+                        y: (attempt.y-400)/block
+                    },
+                    end: {
+                        x: (attempt.x-400)/block - choice.length-1,
+                        y: (attempt.y-400)/block + choice.width-1
+                    }
+                }
+            }
+            break;
+    }
+
+    //create rooms above or below, based on height
+    if (choice.height > 1) {
+        switch (height) {
+            case 1:
+        }
+    }
+
+    //add room to the levels and the map
+    levels[cLevel + 3].rooms.push(newRoom);
+    map.push(newRoom);
+    killSelectSprites();
 
 
 }
 
+//return position mods for incremental rotations
+function angleIncPosition(angle, inc) {
+    let result = [];
+    switch (angle) {
+        case -90:
+            result.push(0);
+            result.push(inc);
+            break;
+        case 90:
+            result.push(0);
+            result.push(-inc);
+            break;
+        case -180:
+            result.push(inc);
+            result.push(0);
+            break;
+        case 180:
+            result.push(-inc);
+            result.push(0);
+            break;
+        case -270:
+
+            result.push(0);
+            result.push(inc);
+            break;
+        case 270:
+            result.push(0);
+            result.push(-inc);
+            break;
+        default:
+            result.push(0);
+            result.push(0);
+            break;
+    }
+    return result;
+}
+
+//return position mods for direct rotations
+function angleFullPosition(angle, inc,low) {
+    let result = [];
+    switch (angle) {
+        case -90:
+            console.log("hit negative")
+            result.push(low);
+            result.push(inc);
+            break;
+        case 90:
+            console.log("hit 90");
+            result.push(low);
+            result.push(-inc);
+            break;
+        case -180:
+            result.push(inc);
+            result.push(inc);
+            break;
+        case 180:
+            result.push(-inc);
+            result.push(-inc);
+            break;
+        case -270:
+            result.push(low);
+            result.push(inc);
+            break;
+        case 270:
+            result.push(low);
+            result.push(-inc);
+            break;
+        default:
+            result.push(low);
+            result.push(low);
+            break;
+    }
+    return result;
+}
+
+//returns currently selected room
 function findSelectedRoom() {
     for (let i = 0; i < levelRooms.length; i++) {
         if (levelRooms[i].selected === true) {
             return levels[cLevel + 3].rooms[i];
         }
     }
-
+    console.log("no selected room");
     return null;
 }
 
+//calculates room size
 function determineRoomSize(room) {
     let start = room.coordinates.start;
     let end = room.coordinates.end;
-    let rsize = [Math.abs(end.x - start.x)+1, Math.abs(end.y - start.y)+1];
+    let rsize = [Math.abs(end.x - start.x) + 1, Math.abs(end.y - start.y) + 1];
 
     return rsize;
 }
 
+//calculate greater position based on low value grid numbers
 function calculatePosition(value) {
     return origin + (block * value);
 }
 
-function killSelectSprites(){
-    if(selectSprites.length>0){
-        for(let i=0;i< selectSprites.length;i){
-            selectSprites[selectSprites.length-1].destroy();
+//kills all select sprites(blue) onscreen
+function killSelectSprites() {
+    if (selectSprites.length > 0) {
+        for (let i = 0; i < selectSprites.length; i) {
+            selectSprites[selectSprites.length - 1].destroy();
             selectSprites.pop();
         }
         selectSprites = []
     }
 }
 
+//save the map to the database
 function save(pointer) {
     fetch("/save", {
         "method": "POST",
