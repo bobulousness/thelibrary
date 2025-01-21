@@ -9,11 +9,11 @@ const mapSchema = new mongoose.Schema({
     coordinates:{
         start: {
             x: Number,
-            y: Number,
+            y: Number
         },
         end:{
             x: Number,
-            y: Number,
+            y: Number
         }
     },
     items: [{
@@ -35,26 +35,22 @@ const mapSchema = new mongoose.Schema({
     }]
 }, {collection: 'maps'});
 
-const model = mongoose.model("maps", mapSchema);
+const mapsModel = mongoose.model('maps', mapSchema);
 
 module.exports.getMap = async function (){
-    return await model.find();
+    return await mapsModel.find({});
 }
 
 module.exports.updateMap = async function (room){
 
-    var result = await model.findOne(room);
+    var result = await mapsModel.findOne(room);
 
     if (result) {
         result.rsvp = rsvp;
         result.save();
         console.log("updated room");
     } else {
-        let result = new model({user: user, con: con, rsvp: rsvp});
-        result.save();
+        room.save();
         console.log("saved new room");
     }
-}
-
-
-module.exports.model = model;
+};
