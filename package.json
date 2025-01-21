@@ -13,11 +13,12 @@
     "body-parser": "^1.19.2",
     "consolidate": "^0.16.0",
     "cors": "^2.8.5",
+    "debug": "^4.4.0",
     "ejs": "^3.1.6",
     "express": "^4.17.3",
     "express-session": "^1.17.2",
     "mongodb": "^4.4.1",
-    "mongoose": "^6.2.9",
+    "mongoose": "^8.9.5",
     "mustache": "^4.2.0",
     "phaser": "^3.55.2",
     "require": "^0.4.4"

@@ -10,6 +10,7 @@ const config = {
     }
 }
 
+//import { mapsModel } from "../models/mapsDB";
 var map = {};
 const block = 55;
 const origin = 400;
@@ -43,6 +44,7 @@ var levels = [
         rooms: []
     }
 ];
+// const maps = mongoose.model("maps", mapSchema);
 var cLevel = 0;
 var levelRooms = [];
 var selectSprites = [];
@@ -55,14 +57,14 @@ function preload() {
     this.load.image('background', '../assets/grey.png');
 
     //small rooms
-    this.load.image('baseRoom', '../assets/baseRoom.png');
-    this.load.image('tallRoom1', '../assets/tallRoom1.png');
+    this.load.image('standardRoom', '../assets/baseRoom.png');
+    this.load.image('tallRoom', '../assets/tallRoom1.png');
     this.load.image('tallRoom2', '../assets/tallRoom2.png');
 
     //large rooms
-    this.load.image('balconyRoom2', '../assets/balconyRoom2.png');
+    this.load.image('balconyRoom', '../assets/balconyRoom2.png');
     this.load.image('largeShortRoom', '../assets/largeShortRoom.png');
-    this.load.image('balconyRoomStair1', '../assets/balconyRoomStair1.png');
+    this.load.image('balconyRoomStair', '../assets/balconyRoomStair1.png');
     this.load.image('balconyRoomStair2', '../assets/balconyRoomStair2.png');
     this.load.image('fountainRoom', '../assets/fountainRoom.png');
 
@@ -72,7 +74,7 @@ function preload() {
     this.load.image('longRoom', '../assets/longRoom.png')
 
     //giant rooms
-    this.load.image('giantRoom1', '../assets/giantRoom1.png');
+    this.load.image('giantRoom', '../assets/giantRoom1.png');
     this.load.image('giantRoom2', '../assets/giantRoom2.png');
 
     //buttons
@@ -80,8 +82,8 @@ function preload() {
     this.load.image('newRoom', '../assets/newRoom.png');
 
     //selects
-    this.load.spritesheet('selectRoom', '../assets/SelectRoom.png', {frameHeight: 54, frameWidth: 54});
-    this.load.spritesheet('select', '../assets/Select.png', {frameHeight: 54, frameWidth: 54})
+    this.load.spritesheet('selectRoom', '../assets/selectRoom.png', {frameHeight: 54, frameWidth: 54});
+    this.load.spritesheet('select', '../assets/select.png', {frameHeight: 54, frameWidth: 54})
 }
 
 function create() {
@@ -104,24 +106,23 @@ function create() {
     this.anims.create(selectRoomAnim);
     this.anims.create(selectAnim);
 
-    this.selectRoomSprite = this.add.sprite(0, 0, 'selectRoom')
+    this.selectRoomSprite = this.add.sprite(100, 500, 'selectRoom')
         .play('selectRoomAnim')
         .setOrigin(0)
         .setDepth(1);
 
-    this.save = this.add.sprite(8, 8, 'save')
+    this.save = this.add.sprite(80, 80, "save")
         .setOrigin(0)
         .setInteractive()
         .on('pointerdown', pointer => save());
 
-    this.newRoom = this.add.sprite(8, 124, 'newRoom')
+    this.newRoom = this.add.sprite(458, 124, 'newRoom')
         .setOrigin(0)
         .setInteractive()
         .on('pointerdown', pointer => startNewRoom(this));
 
-
     //fetch maps and render level 0
-    fetch("/map",)
+    fetch("/map")
         //parse map
         .then(response => response.json())
         .then(response => JSON.stringify(response))
@@ -131,22 +132,24 @@ function create() {
             for (let i = 0; i < map.length; i++) {
                 levels[map[i].level + 3].rooms.push(map[i]);
             }
+            console.log(map);
         })
         //render level 0
         .then(r => {
             let rooms = levels[3].rooms;
+            console.log("part 2: " + rooms[0].coordinates.start.x + ", " + rooms[0].coordinates.start.y + ", " + rooms[0].name);
             for (let i = 0; i < rooms.length; i++) {
                 let start = rooms[i].coordinates.start;
                 let name = rooms[i].name;
+                console.log("hit");
                 levelRooms[i] = {
-                    image: this.add.sprite(calculatePosition(start.x), calculatePosition(start.y), name)
-                        .setOrigin(0)
-                        .setInteractive(),
+                    image: this.add.sprite(calculatePosition(start.x), calculatePosition(start.y), name).setOrigin(0)
+                    .setInteractive(),
                     selected: false
                 };
                 levelRooms[i].image.on('pointerdown', pointer => selectRoom(levelRooms[i], this.selectRoomSprite));
             }
-        })
+        });
 }
 
 function renderLevel(level) {
@@ -156,10 +159,10 @@ function renderLevel(level) {
     console.log(rooms.length)
     for (let i = 0; i < rooms.length; i++) {
         console.log(i);
-        let start = rooms[i].coordinates;
+        let coords = rooms[i].coordinates;
         let name = rooms[i].name;
         levelRooms[i].push({
-            image: this.add.sprite(calculatePosition(start.x), calculatePosition(start.y), name)
+            image: this.add.sprite(calculatePosition(coords.start.x), calculatePosition(coords.start.y), name)
                 .setOrigin(0),
             selected: false
         });
@@ -191,7 +194,7 @@ function startNewRoom(context) {
     if(sRoom != null) {
         let rSize = determineRoomSize(sRoom);
         killSelectSprites();
-        selectSprites = []
+        selectSprites = [];
 
         //horizontal selectors
         for (let i = 0; i < rSize[0]; i++) {
@@ -204,7 +207,7 @@ function startNewRoom(context) {
                     .setDepth(1)
                     .setInteractive()
                     .on('pointerdown', pointer => {
-                        makeNewRoom(context);
+                        makeNewRoom(context, sRoom);
                     })
             );
 
@@ -216,7 +219,7 @@ function startNewRoom(context) {
                     .setDepth(1)
                     .setInteractive()
                     .on('pointerdown', pointer => {
-                        makeNewRoom(context);
+                        makeNewRoom(context, sRoom);
                     })
             );
         }
@@ -231,7 +234,7 @@ function startNewRoom(context) {
                     .setDepth(1)
                     .setInteractive()
                     .on('pointerdown', pointer => {
-                        makeNewRoom(context);
+                        makeNewRoom(context, sRoom);
                     })
             );
 
@@ -242,7 +245,7 @@ function startNewRoom(context) {
                     .setDepth(1)
                     .setInteractive()
                     .on('pointerdown', pointer => {
-                        makeNewRoom(context);
+                        makeNewRoom(context, sRoom);
                     })
             );
         }
@@ -262,7 +265,7 @@ function startNewRoom(context) {
     }
 }
 
-function makeNewRoom(sel) {
+function makeNewRoom(context, sRoom) {
     let rarity = roomRarity[Math.floor(Math.random() * 8)];
     let roomList;
     fetch("/getRooms", {
