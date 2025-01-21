@@ -57,7 +57,7 @@ function preload() {
     this.load.image('background', '../assets/grey.png');
 
     //small rooms
-    this.load.image('standardRoom', '../assets/baseRoom.png');
+    this.load.image('baseRoom', '../assets/baseRoom.png');
     this.load.image('tallRoom', '../assets/tallRoom1.png');
     this.load.image('tallRoom2', '../assets/tallRoom2.png');
 
