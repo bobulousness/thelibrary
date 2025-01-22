@@ -6,51 +6,59 @@ const mapSchema = new mongoose.Schema({
     },
     name: String,
     level: Number,
+    angle: Number,
     coordinates:{
         start: {
             x: Number,
-            y: Number
+            y: Number,
         },
         end:{
             x: Number,
-            y: Number
+            y: Number,
         }
     },
     items: [{
-            name: String,
-            container: String,
-            floor: Number,
-            hidden: Boolean,
-            known: Boolean
+        name: String,
+        container: String,
+        floor: Number,
+        hidden: Boolean,
+        known: Boolean
     }],
     creatures: [{
-        1: {
-            name: String,
-            hp: Number,
-            maxhp: Number,
-            floor: Number,
-            hidden: Boolean,
-            known: Boolean
-        }
+        name: String,
+        hp: Number,
+        maxhp: Number,
+        floor: Number,
+        hidden: Boolean,
+        known: Boolean,
+        alive: Boolean
     }]
 }, {collection: 'maps'});
 
-const mapsModel = mongoose.model('maps', mapSchema);
+const model = mongoose.model("maps", mapSchema);
 
 module.exports.getMap = async function (){
-    return await mapsModel.find({});
+    return await model.find();
 }
 
-module.exports.updateMap = async function (room){
+module.exports.updateRoom = async function (room){
 
-    var result = await mapsModel.findOne(room);
+    var result = await model.findOne(room);
 
     if (result) {
-        result.rsvp = rsvp;
         result.save();
         console.log("updated room");
     } else {
-        room.save();
+        let result = new model(room);
+        result.save();
         console.log("saved new room");
     }
-};
+}
+
+module.exports.addRoom = async function (r) {
+    let newRoom = new model(r);
+    newRoom.save();
+}
+
+
+module.exports.model = model;

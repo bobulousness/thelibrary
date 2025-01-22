@@ -46,6 +46,13 @@ server.post("/getRooms", urle, async (request, response) => {
     });
 });
 
+server.post("/roomData", urle, async (request, response) => {
+    var q = request.body.code
+    roomDB.getRoomData(q).then(rooms => {
+        response.send(rooms);
+    });
+});
+
 server.get("/", async (request, response, next) => {
     response.render('index');
 });
