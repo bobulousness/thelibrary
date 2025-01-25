@@ -16,20 +16,20 @@ var map = {};
 const block = 55;
 const origin = 400;
 var levels = [
-    {z: -3, rooms: []},
-    {z: -2, rooms: []},
-    {z: -1, rooms: []},
-    {z: 0, rooms: []},
-    {z: 1, rooms: []},
-    {z: 2, rooms: []},
-    {z: 3, rooms: []}
+    { z: -3, rooms: [] },
+    { z: -2, rooms: [] },
+    { z: -1, rooms: [] },
+    { z: 0, rooms: [] },
+    { z: 1, rooms: [] },
+    { z: 2, rooms: [] },
+    { z: 3, rooms: [] }
 ];
 var cLevel = 0;
 var levelRooms = [];
 var selectSprites = [];
 const roomRarity = [1, 1, 1, 1, 2, 2, 2, 3];
 const itemRarity = [1, 1, 1, 1, 1, 2, 2, 2, 2, 3, 3, 3, 4, 4, 5];
-const standardTextCSS = {font: "20px Arial", color: "#ffffff"};
+const standardTextCSS = { font: "20px Arial", color: "#ffffff" };
 
 //start the game
 const game = new Phaser.Game(config);
@@ -66,8 +66,8 @@ function preload() {
     this.load.image('infoButton', '../assets/infoButton.png');
 
     //selects
-    this.load.spritesheet('selectRoom', '../assets/SelectRoom.png', {frameHeight: 54, frameWidth: 54});
-    this.load.spritesheet('select', '../assets/Select.png', {frameHeight: 54, frameWidth: 54})
+    this.load.spritesheet('selectRoom', '../assets/SelectRoom.png', { frameHeight: 54, frameWidth: 54 });
+    this.load.spritesheet('select', '../assets/Select.png', { frameHeight: 54, frameWidth: 54 })
 }
 
 function create() {
@@ -76,13 +76,13 @@ function create() {
 
     var selectRoomAnim = {
         key: 'selectRoomAnim',
-        frames: this.anims.generateFrameNumbers('selectRoom', {start: 0, end: 1, first: 0}),
+        frames: this.anims.generateFrameNumbers('selectRoom', { start: 0, end: 1, first: 0 }),
         frameRate: 2,
         repeat: -1
     }
     var selectAnim = {
         key: 'selectAnim',
-        frames: this.anims.generateFrameNumbers('select', {start: 0, end: 1, first: 0}),
+        frames: this.anims.generateFrameNumbers('select', { start: 0, end: 1, first: 0 }),
         frameRate: 2,
         repeat: -1
     }
@@ -132,7 +132,7 @@ function create() {
                 console.log("hit");
                 levelRooms[i] = {
                     image: this.add.sprite(calculatePosition(start.x), calculatePosition(start.y), name).setOrigin(0)
-                    .setInteractive(),
+                        .setInteractive(),
                     selected: false
                 };
                 levelRooms[i].image.on('pointerdown', pointer => selectRoom(levelRooms[i], this.selectRoomSprite));
@@ -195,29 +195,29 @@ function startNewRoom(context) {
     if (sRoom != null) {
         //get the size of the room, get rid of any existing select sprites, and get the angle adjustments
         let rSize = determineRoomSize(sRoom);
-           killSelectSprites();
-        let theta = angleFullPosition(-sRoom.angle, 1,1);
-        console.log(theta+", "+(-sRoom.angle));
+        killSelectSprites();
+        let theta = angleFullPosition(-sRoom.angle, 1, 1);
+        console.log(theta + ", " + (-sRoom.angle));
         let start = sRoom.coordinates.start;
         let end = sRoom.coordinates.end;
-        console.log("start: " + start.x + ", " + start.y +", end"+ end.x + ", " + end.y);
+        console.log("start: " + start.x + ", " + start.y + ", end" + end.x + ", " + end.y);
 
-        let negx = start.x-end.x > 0 ? -1 : 1;
-        let negy = start.y-end.y > 0 ? -1 : 1;
+        let negx = start.x - end.x > 0 ? -1 : 1;
+        let negy = start.y - end.y > 0 ? -1 : 1;
 
         //horizontal selectors
         for (let i = 0; i < rSize[0]; i++) {
 
             //top
             selectSprites.push(
-                context.add.sprite(calculatePosition(end.x - (i*negx)), calculatePosition(start.y - theta[1]), 'select')
+                context.add.sprite(calculatePosition(end.x - (i * negx)), calculatePosition(start.y - theta[1]), 'select')
                     .play('selectAnim')
                     .setOrigin(0)
                     .setDepth(1)
                     .setInteractive()
                     .on('pointerdown', pointer => {
                         makeNewRoom(context, {
-                            x: calculatePosition(end.x - (i*negx)),
+                            x: calculatePosition(end.x - (i * negx)),
                             y: calculatePosition(start.y - theta[1])
                         });
                     })
@@ -225,14 +225,14 @@ function startNewRoom(context) {
 
             //bottom
             selectSprites.push(
-                context.add.sprite(calculatePosition(end.x - (i*negx)), calculatePosition(end.y + theta[1]), 'select')
+                context.add.sprite(calculatePosition(end.x - (i * negx)), calculatePosition(end.y + theta[1]), 'select')
                     .play('selectAnim')
                     .setOrigin(0)
                     .setDepth(1)
                     .setInteractive()
                     .on('pointerdown', pointer => {
                         makeNewRoom(context, {
-                            x: calculatePosition(end.x - (i*negx)),
+                            x: calculatePosition(end.x - (i * negx)),
                             y: calculatePosition(end.y + theta[1])
                         });
                     })
@@ -243,7 +243,7 @@ function startNewRoom(context) {
 
         for (let i = 0; i < rSize[1]; i++) {
             selectSprites.push(
-                context.add.sprite(calculatePosition(start.x - theta[0]), calculatePosition(end.y - (i*negy)), 'select')
+                context.add.sprite(calculatePosition(start.x - theta[0]), calculatePosition(end.y - (i * negy)), 'select')
                     .play('selectAnim')
                     .setOrigin(0)
                     .setDepth(1)
@@ -251,13 +251,13 @@ function startNewRoom(context) {
                     .on('pointerdown', pointer => {
                         makeNewRoom(context, {
                             x: calculatePosition(start.x - theta[0]),
-                            y: calculatePosition(end.y - (i*negy))
+                            y: calculatePosition(end.y - (i * negy))
                         });
                     })
             );
 
             selectSprites.push(
-                context.add.sprite(calculatePosition(end.x + theta[0]), calculatePosition(end.y - (i*negy)), 'select')
+                context.add.sprite(calculatePosition(end.x + theta[0]), calculatePosition(end.y - (i * negy)), 'select')
                     .play('selectAnim')
                     .setOrigin(0)
                     .setDepth(1)
@@ -265,7 +265,7 @@ function startNewRoom(context) {
                     .on('pointerdown', pointer => {
                         makeNewRoom(context, {
                             x: calculatePosition(end.x + theta[0]),
-                            y: calculatePosition(end.y + (i*negy))
+                            y: calculatePosition(end.y + (i * negy))
                         });
                     })
             );
@@ -287,9 +287,9 @@ function startNewRoom(context) {
 }
 
 //click event function on click of slect sprites (blue)
-function 
+function
 
-makeNewRoom(context, object) {
+    makeNewRoom(context, object) {
     //generate room rarity
     let rarity = roomRarity[Math.floor(Math.random() * 8)];
     let roomList;
@@ -299,7 +299,7 @@ makeNewRoom(context, object) {
         headers: {
             'Content-Type': 'application/json'
         },
-        body: JSON.stringify({rare: rarity})
+        body: JSON.stringify({ rare: rarity })
     })
         .then(response => response.json())
         .then(response => JSON.stringify(response))
@@ -375,7 +375,7 @@ function addRoomToMap(choice, context, object) {
             if (Phaser.Geom.Intersects.RectangleToRectangle(attempt.getBounds(), levelRooms[i].image.getBounds())) {
                 //adjust the angle and the position accordingly
                 attempt.angle -= 90;
-                pos = angleIncPosition(attempt.angle, block-1);
+                pos = angleIncPosition(attempt.angle, block - 1);
                 attempt.x += pos[0];
                 attempt.y += pos[1];
                 //if it can't fit, get rid of it
@@ -399,30 +399,30 @@ function addRoomToMap(choice, context, object) {
                 angle: attempt.angle,
                 coordinates: {
                     start: {
-                        x: (attempt.x-origin)/block,
-                        y: (attempt.y-origin)/block
+                        x: (attempt.x - origin) / block,
+                        y: (attempt.y - origin) / block
                     },
                     end: {
-                        x: ((attempt.x-origin)/block) + choice.length-1,
-                        y: ((attempt.y-origin)/block) + choice.width-1
+                        x: ((attempt.x - origin) / block) + choice.length - 1,
+                        y: ((attempt.y - origin) / block) + choice.width - 1
                     }
                 }
             }
             break;
         case 90:
         case -90:
-            console.log("y: "+attempt.y);
+            console.log("y: " + attempt.y);
             newRoom = {
                 name: choice.code + height,
                 angle: attempt.angle,
                 coordinates: {
                     start: {
-                        x: (attempt.x-origin)/block,
-                        y: (attempt.y-origin-54)/block
+                        x: (attempt.x - origin) / block,
+                        y: (attempt.y - origin - 54) / block
                     },
                     end: {
-                        x: ((attempt.x-origin)/block) + (choice.width-1),
-                        y: ((attempt.y-origin-54)/block) - (choice.length-1)
+                        x: ((attempt.x - origin) / block) + (choice.width - 1),
+                        y: ((attempt.y - origin - 54) / block) - (choice.length - 1)
                     }
                 }
             }
@@ -434,12 +434,12 @@ function addRoomToMap(choice, context, object) {
                 angle: attempt.angle,
                 coordinates: {
                     start: {
-                        x: (attempt.x-400-54)/block,
-                        y: (attempt.y-400-54)/block
+                        x: (attempt.x - 400 - 54) / block,
+                        y: (attempt.y - 400 - 54) / block
                     },
                     end: {
-                        x: ((attempt.x-400-54)/block) - (choice.length-1),
-                        y: ((attempt.y-400-54)/block) - (choice.width-1)
+                        x: ((attempt.x - 400 - 54) / block) - (choice.length - 1),
+                        y: ((attempt.y - 400 - 54) / block) - (choice.width - 1)
                     }
                 }
             }
@@ -451,12 +451,12 @@ function addRoomToMap(choice, context, object) {
                 angle: attempt.angle,
                 coordinates: {
                     start: {
-                        x: (attempt.x-400)/block,
-                        y: (attempt.y-400)/block
+                        x: (attempt.x - 400) / block,
+                        y: (attempt.y - 400) / block
                     },
                     end: {
-                        x: ((attempt.x-400)/block) - choice.length-1,
-                        y: ((attempt.y-400)/block) + choice.width-1
+                        x: ((attempt.x - 400) / block) - choice.length - 1,
+                        y: ((attempt.y - 400) / block) + choice.width - 1
                     }
                 }
             }
@@ -471,9 +471,15 @@ function addRoomToMap(choice, context, object) {
     }
 
     //add room to the levels and the map
-    levels[cLevel + 3].rooms.push(newRoom);
-    map.push(newRoom);
-    killSelectSprites();
+    fetch("/newRoom")
+        .then(response => response.json())
+        .then(response => JSON.stringify(response))
+        .then(response => {
+            let roomObj = JSON.parse(response);
+            levels[cLevel + 3].rooms.push(roomObj);
+            map.push(roomObj);
+            killSelectSprites();
+        });
 
 
 }
@@ -516,7 +522,7 @@ function angleIncPosition(angle, inc) {
 }
 
 //return position mods for direct rotations
-function angleFullPosition(angle, inc,low) {
+function angleFullPosition(angle, inc, low) {
     let result = [];
     switch (angle) {
         case -90:
@@ -589,33 +595,62 @@ function killSelectSprites() {
     }
 }
 
-function getRoomDescription(context){
+function getRoomDescription(context) {
     let sRoom = findSelectedRoom();
-    fetch("/roomData", {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({code: sRoom.name.replace(/[0-9]/g, '')})
-    })
-        .then(response => response.json())
-        .then(response => JSON.stringify(response))
-        .then(response => JSON.parse(response))
-        .then(response => {
-    console.log(response);
-    var creatureList = "Creatures: \n";
-    for(const creature of sRoom.creatures){
-        creatureList += creature.name + "\n" 
-            + creature.hp + "/" + creature.maxhp + "     is on floor #" + creature.floor + "     ";
-        creatureList += creature.hidden ? "hidden     " : "visible     ";
-        creatureList += creature.known ? "known     \n": "unknown     \n";
+    if (sRoom) {
+        fetch("/roomData", {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ code: sRoom.name.replace(/[0-9]/g, '') })
+        })
+            .then(response => response.json())
+            .then(response => JSON.stringify(response))
+            .then(response => JSON.parse(response))
+            .then(response => {
+                console.log(response);
+                var creatureList = "Creatures: \n";
+                for (const creature of sRoom.creatures) {
+                    creatureList += creature.name + "\n"
+                        + creature.hp + "/" + creature.maxhp + "hp     is on floor #" + creature.floor + "     ";
+                    creatureList += creature.hidden ? "\nhidden     " : "\nvisible     ";
+                    creatureList += creature.known ? "known     \n" : "unknown     \n";
+                }
+
+                var itemList = "Items: \n";
+                for (const item of sRoom.items) {
+                    itemList += item.name + "\n";
+                    if (item.container == "" || item.container == null) {
+                        itemList += "is lying out ";
+                    } else {
+                        itemList += item.container + " ";
+                    }
+                    itemList += " on floor " + item.floor;
+                    itemList += item.hidden ? "\nhidden     " : "\nvisible     ";
+                    itemList += item.known ? "known     \n" : "unknown     \n";
+                }
+                var bookList = "Items: \n";
+                for (const book of sRoom.books) {
+                    bookList += book.name + "\n";
+                    if (book.container == "" || book.container == null) {
+                        bookList += "on the floor ";
+                    } else {
+                        bookList += book.container + " ";
+                    }
+                    bookList += " on floor " + book.floor;
+                    bookList += book.hidden ? "\nhidden     " : "\nvisible     ";
+                    bookList += book.known ? "known     \n" : "unknown     \n";
+                }
+
+
+                context.roomDesc = context.add.text(10, 60, response[0].name, standardTextCSS);
+                context.roomItems = context.add.text(10, 260, itemList, standardTextCSS);
+                context.roomCreatures = context.add.text(10, 460, creatureList, standardTextCSS);
+                context.roomCreatures = context.add.text(10, 460, bookList, standardTextCSS);
+
+            });
     }
-    
-    context.roomDesc = context.add.text(10, 60, response[0].name, standardTextCSS);
-    context.roomItems = context.add.text(10, 260, creatureList, standardTextCSS);
-    context.roomCreatures = context.add.text(10, 460, creatureList, standardTextCSS);
-});
-    
 }
 
 //save the map to the database
@@ -625,6 +660,6 @@ function save(pointer) {
         "headers": {
             "content-type": "application/json"
         },
-        "body": JSON.stringify(map)
-    }).then(console.log("saved"));
+        "body": JSON.stringify({ mappy: map })
+    }).then(console.log(JSON.stringify(map)));
 }

@@ -5,9 +5,9 @@ const bookSchema = new mongoose.Schema({
     name: String,
     class: String,
     requirements: String
-}, {collection: 'books'});
+}, {collection: 'book_lkp'});
 
-const model = mongoose.model("books", bookSchema);
+const model = mongoose.model("book_lkp", bookSchema);
 
 module.exports.getBooks = async function (){
     return await model.find();

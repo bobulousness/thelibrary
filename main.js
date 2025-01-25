@@ -4,9 +4,9 @@ const Cors = require("cors")
 const mongoose = require('mongoose');
 const engines = require('consolidate');
 
-const mapDB = require('./models/mapsDB');
-const bookDB = require('./models/bookDB');
-const roomDB = require('./models/roomDB');
+const roomsDB = require('./models/roomsDB');
+const bookLKP = require('./models/bookLKPDB');
+const roomLKP = require('./models/roomLKPDB');
 const bodyParser = require("body-parser");
 
 const server = express()
@@ -32,7 +32,7 @@ db.once('open', function () {
 
 
 server.get("/map", async (request, response) => {
-    mapDB.getMap().then(map => {
+    roomsDB.getMap().then(map => {
         response.send(map);
     });
 });
@@ -41,14 +41,14 @@ server.post("/getRooms", urle, async (request, response) => {
 
     var q = request.body.rare;
     console.log(q);
-    roomDB.getRoomsByRarity(q).then(rooms => {
+    roomLKP.getRoomsByRarity(q).then(rooms => {
         response.send(rooms);
     });
 });
 
 server.post("/roomData", urle, async (request, response) => {
     var q = request.body.code
-    roomDB.getRoomData(q).then(rooms => {
+    roomLKP.getRoomData(q).then(rooms => {
         response.send(rooms);
     });
 });
@@ -59,7 +59,15 @@ server.get("/", async (request, response, next) => {
 
 server.post("/save", async (request, response, next) => {
     response.render('index');
+    let q = request.body.mappy
+    roomsDB.save(q);
 });
+
+server.get("/newRoom", async (request, response, next) => {
+    roomsDB.getNewRoomObject().then(newRoom => {
+        response.send(newRoom);
+    })
+})
 
 server.listen("3030", async () => {
     try {
