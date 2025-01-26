@@ -8,14 +8,15 @@ const mapSchema = new mongoose.Schema({
     hidden: Boolean,
     known: Boolean,
     opinion: String,
+    room: Number,
     alive: Boolean
     
 }, { collection: 'creatures' });
 
 const model = mongoose.model("creatures", mapSchema);
 
-module.exports.getMap = async function () {
-    return await model.find();
+module.exports.getCreature = async function (creature) {
+    return await model.findById(creature._id);
 }
 
 module.exports.getNewCreatureObject = async function () {
@@ -23,15 +24,19 @@ module.exports.getNewCreatureObject = async function () {
     return result;
 }
 
-module.exports.updateRoom = async function (creature) {
+module.exports.updateCreature = async function (creature) {
 
     var result = await model.findById({ _id: creature._id });
 
     if (result) {
         result.hp = creature.hp;
-        result.items = creature.items;
-        result.creatures = creature.creatures;
-        result.books = result.books;
+        result.opinion = creature.opinion;
+        result.known = creature.known;
+        result.floor = creature.floor;
+        result.room = creature.room;
+        result.alive = creature.alive;
+        result.hidden = creature.hidden;
+        result.maxhp = creature.maxhp;
         result.save();
         console.log("updated room");
     } else {
@@ -41,14 +46,14 @@ module.exports.updateRoom = async function (creature) {
     }
 }
 
-module.exports.addRoom = async function (r) {
+module.exports.addCreature = async function (r) {
     let newRoom = new model(r);
     newRoom.save();
 }
 
-module.exports.save = async function (map) {
-    for (const room of map) {
-        this.updateRoom(room);
+module.exports.save = async function (creatures) {
+    for (const creature of creatures) {
+        this.updateCreature(creature);
     }
 }
 

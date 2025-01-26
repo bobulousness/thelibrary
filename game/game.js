@@ -324,7 +324,7 @@ function makeNewRoom(context, object) {
                 //get the room from the list
                 choice = roomList[n];
                 //add the room to the map
-                result = addRoomToMap(choice, context, object);
+                addRoomToMap(choice, context, object);
                 found = true;
                 //if it didnt work, try again
                 if (again.length === roomList.length) {
@@ -388,78 +388,7 @@ function addRoomToMap(choice, context, object) {
     console.log("angle: " + attempt.angle);
 
     //create the object for the new room based on angle
-    let newRoom;
-    switch (attempt.angle) {
-        case 0:
-        case 360:
-            newRoom = {
-                name: choice.code + height,
-                angle: attempt.angle,
-                coordinates: {
-                    start: {
-                        x: (attempt.x - origin) / block,
-                        y: (attempt.y - origin) / block
-                    },
-                    end: {
-                        x: ((attempt.x - origin) / block) + choice.length - 1,
-                        y: ((attempt.y - origin) / block) + choice.width - 1
-                    }
-                }
-            }
-            break;
-        case 90:
-        case -90:
-            console.log("y: " + attempt.y);
-            newRoom = {
-                name: choice.code + height,
-                angle: attempt.angle,
-                coordinates: {
-                    start: {
-                        x: (attempt.x - origin) / block,
-                        y: (attempt.y - origin - 54) / block
-                    },
-                    end: {
-                        x: ((attempt.x - origin) / block) + (choice.width - 1),
-                        y: ((attempt.y - origin - 54) / block) - (choice.length - 1)
-                    }
-                }
-            }
-            break;
-        case 180:
-        case -180:
-            newRoom = {
-                name: choice.code + height,
-                angle: attempt.angle,
-                coordinates: {
-                    start: {
-                        x: (attempt.x - origin) / block,
-                        y: (attempt.y - origin) / block
-                    },
-                    end: {
-                        x: ((attempt.x - origin) / block) - (choice.length - 1),
-                        y: ((attempt.y - origin) / block) - (choice.width - 1)
-                    }
-                }
-            }
-            break;
-        case 270:
-        case -270:
-            newRoom = {
-                name: choice.code + height,
-                angle: attempt.angle,
-                coordinates: {
-                    start: {
-                        x: (attempt.x - origin) / block,
-                        y: (attempt.y - origin) / block
-                    },
-                    end: {
-                        x: ((attempt.x - origin) / block) - choice.length - 1,
-                        y: ((attempt.y - origin) / block) + choice.width - 1
-                    }
-                }
-            }
-            break;
-    }
+    let newRoom = createRoomFromAngle(attempt, choice, height);
 
     //create rooms above or below, based on height
     if (choice.height > 1) {
@@ -482,6 +411,79 @@ function addRoomToMap(choice, context, object) {
             map.push(roomObj);
             killSelectSprites();
         });
+}
+
+function createRoomFromAngle(attempt, choice, height) {
+    switch (attempt.angle) {
+        case 0:
+        case 360:
+            return {
+                name: choice.code + height,
+                angle: attempt.angle,
+                coordinates: {
+                    start: {
+                        x: (attempt.x - origin) / block,
+                        y: (attempt.y - origin) / block
+                    },
+                    end: {
+                        x: ((attempt.x - origin) / block) + choice.length - 1,
+                        y: ((attempt.y - origin) / block) + choice.width - 1
+                    }
+                }
+            }
+            break;
+        case 90:
+        case -90:
+            return {
+                name: choice.code + height,
+                angle: attempt.angle,
+                coordinates: {
+                    start: {
+                        x: (attempt.x - origin) / block,
+                        y: (attempt.y - origin) / block
+                    },
+                    end: {
+                        x: ((attempt.x - origin) / block) + (choice.width - 1),
+                        y: ((attempt.y - origin) / block) - (choice.length - 1)
+                    }
+                }
+            }
+            break;
+        case 180:
+        case -180:
+            return {
+                name: choice.code + height,
+                angle: attempt.angle,
+                coordinates: {
+                    start: {
+                        x: (attempt.x - origin) / block,
+                        y: (attempt.y - origin) / block
+                    },
+                    end: {
+                        x: ((attempt.x - origin) / block) - (choice.length - 1),
+                        y: ((attempt.y - origin) / block) - (choice.width - 1)
+                    }
+                }
+            }
+            break;
+        case 270:
+        case -270:
+            return {
+                name: choice.code + height,
+                angle: attempt.angle,
+                coordinates: {
+                    start: {
+                        x: (attempt.x - origin) / block,
+                        y: (attempt.y - origin) / block
+                    },
+                    end: {
+                        x: ((attempt.x - origin) / block) - choice.length - 1,
+                        y: ((attempt.y - origin) / block) + choice.width - 1
+                    }
+                }
+            }
+            break;
+    }
 }
 
 //return position mods for incremental rotations

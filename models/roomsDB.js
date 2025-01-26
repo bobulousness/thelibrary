@@ -14,8 +14,7 @@ const mapSchema = new mongoose.Schema({
             y: Number,
         }
     },
-    items: [{
-    }],
+    items: [],
     creatures: [],
     books: []
 }, {collection: 'rooms'});
