@@ -444,7 +444,7 @@ function createRoomFromAngle(attempt, choice, height) {
                     },
                     end: {
                         x: ((attempt.x - origin) / block) + (choice.width - 1),
-                        y: ((attempt.y - origin) / block) - (choice.length - 1)
+                        y: ((attempt.y - origin - block) / block) - (choice.length - 1)
                     }
                 }
             }
@@ -460,8 +460,8 @@ function createRoomFromAngle(attempt, choice, height) {
                         y: (attempt.y - origin) / block
                     },
                     end: {
-                        x: ((attempt.x - origin) / block) - (choice.length - 1),
-                        y: ((attempt.y - origin) / block) - (choice.width - 1)
+                        x: ((attempt.x - origin - block) / block) - (choice.length - 1),
+                        y: ((attempt.y - origin - block) / block) - (choice.width - 1)
                     }
                 }
             }
