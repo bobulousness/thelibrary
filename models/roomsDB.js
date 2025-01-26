@@ -15,28 +15,9 @@ const mapSchema = new mongoose.Schema({
         }
     },
     items: [{
-        name: String,
-        container: String,
-        floor: Number,
-        hidden: Boolean,
-        known: Boolean
     }],
-    creatures: [{
-        name: String,
-        hp: Number,
-        maxhp: Number,
-        floor: Number,
-        hidden: Boolean,
-        known: Boolean,
-        alive: Boolean
-    }],
-    books: [{
-        name: String,
-        container: String,
-        floor: Number,
-        hidden: Boolean,
-        known: Boolean
-    }]
+    creatures: [],
+    books: []
 }, {collection: 'rooms'});
 
 const model = mongoose.model("rooms", mapSchema);
@@ -55,11 +36,14 @@ module.exports.updateRoom = async function (room){
     var result = await model.findById({_id:room._id});
 
     if (result) {
+        result.coordinates = room.coordinates;
+        result.items = room.items;
+        result.creatures = room.creatures;
+        result.books = room.books;
         result.save();
         console.log("updated room");
     } else {
-        room._id = new mongoose.Types.ObjectId();
-        let result = new model(room);
+        result = new model(room);
         result.save();
         console.log("saved new room");
     }

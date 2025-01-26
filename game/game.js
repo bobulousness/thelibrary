@@ -129,13 +129,13 @@ function create() {
             for (let i = 0; i < rooms.length; i++) {
                 let start = rooms[i].coordinates.start;
                 let name = rooms[i].name;
-                console.log("hit");
                 levelRooms[i] = {
                     image: this.add.sprite(calculatePosition(start.x), calculatePosition(start.y), name).setOrigin(0)
                         .setInteractive(),
                     selected: false
                 };
                 levelRooms[i].image.on('pointerdown', pointer => selectRoom(levelRooms[i], this.selectRoomSprite));
+                levelRooms[i].image.angle = rooms[i].angle;
             }
         });
 }
@@ -265,7 +265,7 @@ function startNewRoom(context) {
                     .on('pointerdown', pointer => {
                         makeNewRoom(context, {
                             x: calculatePosition(end.x + theta[0]),
-                            y: calculatePosition(end.y + (i * negy))
+                            y: calculatePosition(end.y - (i * negy))
                         });
                     })
             );
@@ -287,9 +287,7 @@ function startNewRoom(context) {
 }
 
 //click event function on click of slect sprites (blue)
-function
-
-    makeNewRoom(context, object) {
+function makeNewRoom(context, object) {
     //generate room rarity
     let rarity = roomRarity[Math.floor(Math.random() * 8)];
     let roomList;
@@ -434,12 +432,12 @@ function addRoomToMap(choice, context, object) {
                 angle: attempt.angle,
                 coordinates: {
                     start: {
-                        x: (attempt.x - 400 - 54) / block,
-                        y: (attempt.y - 400 - 54) / block
+                        x: (attempt.x - origin) / block,
+                        y: (attempt.y - origin) / block
                     },
                     end: {
-                        x: ((attempt.x - 400 - 54) / block) - (choice.length - 1),
-                        y: ((attempt.y - 400 - 54) / block) - (choice.width - 1)
+                        x: ((attempt.x - origin) / block) - (choice.length - 1),
+                        y: ((attempt.y - origin) / block) - (choice.width - 1)
                     }
                 }
             }
@@ -451,12 +449,12 @@ function addRoomToMap(choice, context, object) {
                 angle: attempt.angle,
                 coordinates: {
                     start: {
-                        x: (attempt.x - 400) / block,
-                        y: (attempt.y - 400) / block
+                        x: (attempt.x - origin) / block,
+                        y: (attempt.y - origin) / block
                     },
                     end: {
-                        x: ((attempt.x - 400) / block) - choice.length - 1,
-                        y: ((attempt.y - 400) / block) + choice.width - 1
+                        x: ((attempt.x - origin) / block) - choice.length - 1,
+                        y: ((attempt.y - origin) / block) + choice.width - 1
                     }
                 }
             }
@@ -476,12 +474,14 @@ function addRoomToMap(choice, context, object) {
         .then(response => JSON.stringify(response))
         .then(response => {
             let roomObj = JSON.parse(response);
+            roomObj.name = newRoom.name;
+            roomObj.angle = newRoom.angle;
+            roomObj.level = cLevel;
+            roomObj.coordinates = newRoom.coordinates;
             levels[cLevel + 3].rooms.push(roomObj);
             map.push(roomObj);
             killSelectSprites();
         });
-
-
 }
 
 //return position mods for incremental rotations
@@ -630,7 +630,7 @@ function getRoomDescription(context) {
                     itemList += item.hidden ? "\nhidden     " : "\nvisible     ";
                     itemList += item.known ? "known     \n" : "unknown     \n";
                 }
-                var bookList = "Items: \n";
+                var bookList = "Books: \n";
                 for (const book of sRoom.books) {
                     bookList += book.name + "\n";
                     if (book.container == "" || book.container == null) {
@@ -647,7 +647,7 @@ function getRoomDescription(context) {
                 context.roomDesc = context.add.text(10, 60, response[0].name, standardTextCSS);
                 context.roomItems = context.add.text(10, 260, itemList, standardTextCSS);
                 context.roomCreatures = context.add.text(10, 460, creatureList, standardTextCSS);
-                context.roomCreatures = context.add.text(10, 460, bookList, standardTextCSS);
+                context.roomCreatures = context.add.text(10, 660, bookList, standardTextCSS);
 
             });
     }
@@ -661,5 +661,5 @@ function save(pointer) {
             "content-type": "application/json"
         },
         "body": JSON.stringify({ mappy: map })
-    }).then(console.log(JSON.stringify(map)));
+    });
 }
