@@ -1,9 +1,6 @@
 const mongoose = require('mongoose');
 
 const mapSchema = new mongoose.Schema({
-    _id: {
-        $oid: String
-    },
     name: String,
     code: String,
     readName: String,
@@ -14,9 +11,9 @@ const mapSchema = new mongoose.Schema({
     volume: Number,
     features: String,
     rarity: String
-}, {collection: 'rooms'});
+}, {collection: 'room_lkp'});
 
-const model = mongoose.model("rooms", mapSchema);
+const model = mongoose.model("room_lkp", mapSchema);
 
 module.exports.getRooms = async function (){
     return model.find();
