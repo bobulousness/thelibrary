@@ -324,7 +324,7 @@ function makeNewRoom(context, object) {
                 //get the room from the list
                 choice = roomList[n];
                 //add the room to the map
-                addRoomToMap(choice, context, object);
+                result = addRoomToMap(choice, context, object);
                 found = true;
                 //if it didnt work, try again
                 if (again.length === roomList.length) {
@@ -333,16 +333,16 @@ function makeNewRoom(context, object) {
                     break;
                 }
             }
-            //add to level
-
         });
 }
 
 //function to fully implement a new room to the map and game
 function addRoomToMap(choice, context, object) {
     let numOfRooms = levelRooms.length;
-    let height = "";
+    let height = 1;
     let pos;
+    var connectedLevels = [];
+    var roomsToCheck = [];
 
     //create sprite for short rooms
     if (choice.height === 1) {
@@ -361,6 +361,18 @@ function addRoomToMap(choice, context, object) {
                 .setInteractive(),
             selected: false
         });
+
+        for (let i = 1; i <= choice.height; i++) {
+            if (i < height) {
+                roomsToCheck.push(...levels[cLevel - i].rooms);
+                connectedLevels.push(cLevel - i);
+                levels[cLevel - i].rooms.push(createAttemptConnectedRoom(cLevel - i, height - i, choice, object));
+            } else if (i > height) {
+                roomsToCheck.push(...levels[cLevel + i].rooms);
+                connectedLevels.push(cLevel + i);
+                levels[cLevel + i].rooms.push(createAttemptConnectedRoom(cLevel + i, height + i, choice, object));
+            }
+        }
     }
     //setup click event for room sprite
     levelRooms[numOfRooms].image.on('pointerdown', pointer => selectRoom(levelRooms[numOfRooms], context.selectRoomSprite));
@@ -368,49 +380,115 @@ function addRoomToMap(choice, context, object) {
     //check for collisions
     let attempt = levelRooms[numOfRooms].image;
     for (let q = 0; q < 4; q++) {
-        for (let i = 0; i < levelRooms.length - 1; i++) {
-            //on collide..
-            if (Phaser.Geom.Intersects.RectangleToRectangle(attempt.getBounds(), levelRooms[i].image.getBounds())) {
-                //adjust the angle and the position accordingly
-                attempt.angle -= 90;
-                pos = angleIncPosition(attempt.angle, block - 1);
-                attempt.x += pos[0];
-                attempt.y += pos[1];
-                //if it can't fit, get rid of it
-                if (q === 3) {
-                    levelRooms.pop().image.destroy();
-                    console.log(choice.code + " failed");
-                    return false;
-                }
+        //if any collisions exist on any of the applicable levels, rotate it and try again
+        if (checkForRoomSpriteCollision(attempt, connectedLevels, roomsToCheck)) {
+            attempt.angle -= 90;
+            pos = angleIncPosition(attempt.angle, block);
+            attempt.x += pos[0];
+            attempt.y += pos[1];
+            adjustConnectedRooms(attempt, connectedLevels);
+        } else {
+            break;
+        }
+
+        //if it can't fit, get rid of it
+        if (q === 3) {
+            levelRooms.pop().image.destroy();
+            for (const level of connectedLevels) {
+                levels[level + 3].rooms.pop();
             }
+            console.log(choice.code + " failed");
+            return false;
         }
     }
-    console.log("angle: " + attempt.angle);
 
     //create the object for the new room based on angle
     let newRoom = createRoomFromAngle(attempt, choice, height);
 
-    //create rooms above or below, based on height
-    if (choice.height > 1) {
-        switch (height) {
-            case 1:
-        }
-    }
+    let roomCollection = collectRooms(newRoom, connectedLevels);
 
     //add room to the levels and the map
-    fetch("/newRoom")
+    fetch("/newRoomies", {
+        method: "POST",
+        headers: {
+            'content-type': "application/json"
+        },
+        body: JSON.stringify({ rooms:roomCollection })
+    })
         .then(response => response.json())
         .then(response => JSON.stringify(response))
         .then(response => {
-            let roomObj = JSON.parse(response);
-            roomObj.name = newRoom.name;
-            roomObj.angle = newRoom.angle;
-            roomObj.level = cLevel;
-            roomObj.coordinates = newRoom.coordinates;
-            levels[cLevel + 3].rooms.push(roomObj);
-            map.push(roomObj);
-            killSelectSprites();
+            roomCollection = JSON.parse(response);
+            levels[cLevel + 3].rooms.push(roomCollection[0]);
+            generatePeripherals(roomCollection[0], roomCollection.pop());
+            map.push(roomCollection);
+            console.log("we did it");
         });
+    
+    killSelectSprites();
+}
+
+function collectRooms(newRoom, connectedLevels){
+    let results = [newRoom];
+    for (const level of connectedLevels) {
+        results.push(levels[level + 3].rooms[levels[level + 3].rooms.length - 1])
+    }
+    return results;
+}
+
+
+function generatePeripherals(room, relation){
+    
+}
+
+function finalizeConnectedRooms(connectedLevels){
+    for (const level of connectedLevels) {
+        let newRoom = levels[level + 3].rooms[levels[level + 3].rooms.length - 1];
+    }
+}
+
+//adjust connected rooms
+function adjustConnectedRooms(attempt, connectedLevels) {
+    for (const level of connectedLevels) {
+        let newRoom = levels[level + 3].rooms[levels[level + 3].rooms.length - 1];
+        newRoom.coordinates.start.x = reverseCalculatePosition(attempt.x);
+        newRoom.coordinates.start.y = reverseCalculatePosition(attempt.y);
+        newRoom.angle = attempt.angle;
+    }
+}
+
+//create a barebones room
+function createAttemptConnectedRoom(level, height, choice, source) {
+    return {
+        name: choice.code + height,
+        angle: 0,
+        level: level,
+        coordinates: {
+            start: {
+                x: reverseCalculatePosition(source.x),
+                y: reverseCalculatePosition(source.y)
+            }
+        }
+    }
+}
+
+function checkForRoomSpriteCollision(attempt, connectedLevels, roomsToCheck) {
+    for (let i = 0; i < levelRooms.length - 1; i++) {
+        if (Phaser.Geom.Intersects.RectangleToRectangle(attempt.getBounds(), levelRooms[i].image.getBounds())) {
+            return true;
+        }
+    }
+    //todo: add second for loop and check to see if rooms are on same level before overlap check
+    for (const level of connectedLevels) {
+        //get most recently created room in associated level
+        let newRoom = levels[level + 3].rooms[levels[level + 3].rooms.length - 1];
+        for (const room of roomsToCheck) {
+            if (roomsToCheck[i].level == level && checkOverlapping(roomsToCheck[i], newRoom)) {
+                return true;
+            }
+        }
+    }
+    return false;
 }
 
 function createRoomFromAngle(attempt, choice, height) {
@@ -586,6 +664,10 @@ function calculatePosition(value) {
     return origin + (block * value);
 }
 
+function reverseCalculatePosition(value) {
+    return (value - origin) / block;
+}
+
 //kills all select sprites(blue) onscreen
 function killSelectSprites() {
     if (selectSprites.length > 0) {
@@ -653,6 +735,60 @@ function getRoomDescription(context) {
 
             });
     }
+}
+
+function checkOverlapping(oldRoom, newRoom) {
+
+    //calculate the other corners of the new room
+    let corner = { start: { x: newRoom.coordinates.start.x, y: newRoom.coordinates.end.y }, end: { x: newRoom.coordinates.end.x, y: newRoom.coordinates.start.y } };
+
+    //check if new room has any corners in old room
+    let masterOld = checkWithin(oldRoom.coordinates, newRoom.coordinates);
+    let masterCorner = checkWithin(oldRoom.coordinates, corner)
+    //check if old room has any corners within the new room
+    let masterNew = checkWithin(newRoom.coordinates, oldRoom.coordinates)
+
+    //Equivalent Checks
+    let RSS = checkCornerEquals(oldRoom.coordinates.start, newRoom.coordinates.start);
+    let RSE = checkCornerEquals(oldRoom.coordinates.start, newRoom.coordinates.end);
+    let RES = checkCornerEquals(oldRoom.coordinates.end, newRoom.coordinates.start);
+    let REE = checkCornerEquals(oldRoom.coordinates.end, newRoom.coordinates.end);
+
+    let CSS = checkCornerEquals(oldRoom.coordinates.start, corner.start);
+    let CSE = checkCornerEquals(oldRoom.coordinates.start, corner.end);
+    let CES = checkCornerEquals(oldRoom.coordinates.end, corner.start);
+    let CEE = checkCornerEquals(oldRoom.coordinates.end, corner.end);
+    let MasterEq = RSS || RSE || RES || REE || CSS || CSE || CES || CEE;
+
+    if (MasterEq || masterNew || masterOld || masterCorner) {
+        return true;
+    } else {
+        return false;
+    }
+}
+
+function checkWithin(outer, inner) {
+    //Left to Right checks
+    let CSXLTR = outer.start.x < inner.start.x && inner.start.x < outer.end.x;
+    let CEXLTR = outer.start.x < inner.start.x && inner.start.x < outer.end.x;
+    let CSYLTR = outer.start.y < inner.start.y && inner.start.y < outer.end.y;
+    let CEYLTR = outer.start.y < inner.start.y && inner.start.y < outer.end.y;
+    let masterCLTR = (CSXLTR && CSYLTR) || (CEXLTR && CEYLTR);
+
+    //Right to Left checks
+    let CSXRTL = outer.start.x > inner.start.x && inner.start.x > outer.end.x;
+    let CEXRTL = outer.start.x > inner.start.x && inner.start.x > outer.end.x;
+    let CSYRTL = outer.start.y > inner.start.y && inner.start.y > outer.end.y;
+    let CEYRTL = outer.start.y > inner.start.y && inner.start.y > outer.end.y;
+    let masterCRTL = (CSXRTL && CSYRTL) || (CEXRTL && CEYRTL);
+
+    return masterCRTL || masterCLTR;
+}
+
+function checkCornerEquals(corner1, corner2) {
+    let xResult = corner1.x === corner2.x;
+    let yResult = corner1.y === corner2.y;
+    return yResult && xResult;
 }
 
 //save the map to the database

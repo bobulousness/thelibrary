@@ -1,15 +1,16 @@
 const mongoose = require('mongoose');
+const roomRelations = require('./roomRelationsDB.js');
 
 const mapSchema = new mongoose.Schema({
     name: String,
     level: Number,
     angle: Number,
-    coordinates:{
+    coordinates: {
         start: {
             x: Number,
             y: Number,
         },
-        end:{
+        end: {
             x: Number,
             y: Number,
         }
@@ -17,22 +18,22 @@ const mapSchema = new mongoose.Schema({
     items: [],
     creatures: [],
     books: []
-}, {collection: 'rooms'});
+}, { collection: 'rooms' });
 
 const model = mongoose.model("rooms", mapSchema);
 
-module.exports.getMap = async function (){
+module.exports.getMap = async function () {
     return await model.find();
 }
 
-module.exports.getNewRoomObject = async function (){
+module.exports.getNewRoomObject = async function () {
     let result = new model();
     return result;
 }
 
-module.exports.updateRoom = async function (room){
+module.exports.updateRoom = async function (room) {
 
-    var result = await model.findById({_id:room._id});
+    var result = await model.findById({ _id: room._id });
 
     if (result) {
         result.coordinates = room.coordinates;
@@ -48,13 +49,20 @@ module.exports.updateRoom = async function (room){
     }
 }
 
-module.exports.addRoom = async function (r) {
-    let newRoom = new model(r);
-    newRoom.save();
+module.exports.addRooms = async function (r) {
+    var results = [];
+    for (const room of r) {
+        let newRoom = new model(room);
+        newRoom.save();
+        results.push(newRoom);
+    }
+    results.push(roomRelations.makeRoomRelation(results));
+
+    return results;
 }
 
-module.exports.save = async function(map){
-    for(const room of map){
+module.exports.save = async function (map) {
+    for (const room of map) {
         this.updateRoom(room);
     }
 }

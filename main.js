@@ -38,9 +38,7 @@ server.get("/map", async (request, response) => {
 });
 
 server.post("/getRooms", urle, async (request, response) => {
-
     var q = request.body.rare;
-    console.log(q);
     roomLKP.getRoomsByRarity(q).then(rooms => {
         response.send(rooms);
     });
@@ -66,6 +64,13 @@ server.post("/save", async (request, response, next) => {
 server.get("/newRoom", async (request, response, next) => {
     roomsDB.getNewRoomObject().then(newRoom => {
         response.send(newRoom);
+    })
+})
+
+server.post("/newRoomies", async (request, response, next) => {
+    var q = request.body.rooms;
+    roomsDB.addRooms(q).then(newRooms => {
+        response.send(newRooms);
     })
 })
 
